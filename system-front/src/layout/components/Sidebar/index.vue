@@ -31,7 +31,7 @@ export default {
       'sidebar'
     ]),
     routes() {
-       return this.$router.options.routes.concat(global.antRouter)
+      return this.$router.options.routes
     },
     activeMenu() {
       const route = this.$route
