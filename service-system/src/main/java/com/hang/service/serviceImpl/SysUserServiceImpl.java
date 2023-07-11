@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hang.mapper.SysUserMapper;
 import com.hang.model.system.SysUser;
+import com.hang.service.SysUserService;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,6 +16,6 @@ import org.springframework.stereotype.Service;
  */
 
 @Service
-public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements IService<SysUser> {
+public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> implements SysUserService{
 
 }
