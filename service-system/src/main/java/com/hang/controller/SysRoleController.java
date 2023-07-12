@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hang.common.result.Result;
 import com.hang.model.system.SysRole;
+import com.hang.model.vo.AssginRoleVo;
 import com.hang.model.vo.SysRoleQueryVo;
 import com.hang.service.SysRoleService;
 import io.swagger.annotations.Api;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @ClassName SysRoleController
@@ -75,7 +78,7 @@ public class SysRoleController{
             return Result.fail("修改失败");
         }
     }
-    @ApiOperation("根据id查询")
+    @ApiOperation(value = "根据id查询")
     @GetMapping("/findRoleById/{id}")
     public Result findRoleById(@PathVariable Long id){
         SysRole role = sysRoleService.getById(id);
@@ -95,4 +98,28 @@ public class SysRoleController{
         return Result.ok();
     }
 
+    /**
+     * -----------------用户角色权限管理接口---------------------
+     *          分为两步
+     * assign : 分配;分派;指派
+     * (因为之前本来就有绑定数据,现在需要重新分配,只能先查出来,在删除)
+     * (然后再在数据库中写入,然后才成功保存新的角色)
+     */
+    @ApiOperation(value = "根据用户获取角色数据")
+    @GetMapping("/toAssign/{userId}")
+    public Result toAssign(@PathVariable Long userId){
+        Map<String, Object> map = sysRoleService.getRoleByUserId(userId);
+        return Result.ok(map);
+    }
+    /**
+     * 删除之前已经分配的角色
+     * 保存新分配的角色
+     * AssginRoleVole类已经封装在entity了
+     */
+    @ApiOperation(value = "用户重新分配角色")
+    @PostMapping("/doAssign")
+    public Result doAssign(@RequestBody AssginRoleVo assginRoleVo){
+        sysRoleService.doAssogn(assginRoleVo);
+        return Result.ok();
+    }
 }
