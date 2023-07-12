@@ -2,6 +2,7 @@ package com.hang.controller;
 
 import com.hang.common.result.Result;
 import com.hang.model.system.SysMenu;
+import com.hang.model.vo.AssginMenuVo;
 import com.hang.service.SysMenuService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -52,10 +53,29 @@ public class SysMenuController {
         return Result.ok();
     }
 
+    /**
+     * 不能直接删除了,假如一个绑定了一个,那么就会断层
+     * 如果有子节点就不能删除如果没有子节点,那么直接删除
+     * @param id
+     * @return
+     */
     @ApiOperation(value = "根据id删除")
     @DeleteMapping("/remove/{id}")
     public Result remove(@PathVariable String id){
-        sysMenuService.removeById(id);
+        sysMenuService.removeMenuById(id);
+        return Result.ok();
+    }
+    @ApiOperation(value = "根据角色获取菜单")
+    @GetMapping("/toAssign/{roleId}")
+    public Result toAssign(@PathVariable Long roleId) {
+        List<SysMenu> list = sysMenuService.findSysMenuByRoleId(roleId);
+        return Result.ok(list);
+    }
+
+    @ApiOperation(value = "给角色分配权限")
+    @PostMapping("/doAssign")
+    public Result doAssign(@RequestBody AssginMenuVo assginMenuVo) {
+        sysMenuService.doAssign(assginMenuVo);
         return Result.ok();
     }
 }

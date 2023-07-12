@@ -100,7 +100,7 @@ export const constantRoutes = [
           activeMenu: '/system/sysRole',
           title: '角色授权'
         },
-        hidden: true,
+        hidden: true,// 隐藏路由
       }
     ]
   },
