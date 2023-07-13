@@ -4,5 +4,21 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.hang.mapper.SysMenuMapper">
-
+    <resultMap id="sysMenuMap" type="com.hang.model.system.SysMenu" autoMapping="true">
+    </resultMap>
+    <!--三张表的联查  根据userid查询菜单权限数据-->
+    <!--多表联查 sys_user, sys_user_role, sys_role_menu, sys_menu(得到具体内容)-->
+    <select id="findMenuListUserId" resultMap="sysMenuMap">
+        SELECT  menu.id,menu.parent_id,menu.name,menu.type,
+                menu.path,menu.component,menu.perms,menu.icon,
+                menu.sort_value,menu.status,menu.create_time,menu.update_time,menu.is_deleted
+        FROM sys_menu menu
+          INNER JOIN sys_role_menu rm ON menu.`id` = rm.`menu_id`
+          INNER JOIN sys_user_role ur ON rm.`role_id`= ur.`role_id`
+        WHERE ur.`user_id` = #{userId}
+          AND menu.`status` = 1
+          AND rm.`is_deleted` = 0
+          AND ur.`is_deleted` = 0
+          AND menu.`is_deleted` = 0
+    </select>
 </mapper>

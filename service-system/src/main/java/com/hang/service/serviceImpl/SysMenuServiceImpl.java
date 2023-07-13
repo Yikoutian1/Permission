@@ -6,18 +6,18 @@ import com.hang.exception.MyException;
 import com.hang.mapper.SysMenuMapper;
 import com.hang.mapper.SysRoleMenuMapper;
 import com.hang.model.system.SysMenu;
-import com.hang.model.system.SysRole;
 import com.hang.model.system.SysRoleMenu;
 import com.hang.model.vo.AssginMenuVo;
+import com.hang.model.vo.RouterVo;
 import com.hang.service.SysMenuService;
-import com.hang.service.SysRoleService;
 import com.hang.utils.MenuHelper;
+import com.hang.utils.RouterHelper;
+import javafx.util.Builder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @ClassName SysMenuServiceImpl
@@ -122,5 +122,64 @@ public class SysMenuServiceImpl extends ServiceImpl<SysMenuMapper, SysMenu> impl
             sysRoleMenuMapper.insert(sysRoleMenu);
         }
 
+    }
+
+    /**
+     * 根据用户查询菜单权限
+     * (三张表的关联查询)
+     * @param sysUserId
+     * @return
+     */
+    @Override
+    public List<RouterVo> getUserMenu(String sysUserId) {
+        // 菜单->角色->用户 (菜单权限分配给用户 角色分配给用户)
+        // 用户需要先关联角色(sys_user_role) 角色再关联菜单(sys_role_menu)
+
+        List <SysMenu> result = null;
+        // admin是超级管理员,可以操作所有内容(查询所有权限数据)
+        if("1".equals(sysUserId)){
+            LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(SysMenu::getStatus,"1")
+                         .orderByAsc(SysMenu::getSortValue);
+
+            result =  baseMapper.selectList(queryWrapper);
+
+        }else{// 如果不是1(1是超级管理员独有的权限)则查询该用户的权限
+            result = baseMapper.findMenuListUserId(sysUserId);
+        }
+        // 构建陈树形结构
+        List<SysMenu> sysMenusTree = MenuHelper.buildTree(result);
+
+
+        // 实现前端动态路由(转换成前端路由要求的格式数据)   工具类
+        List<RouterVo> routerVos = RouterHelper.buildRouters(sysMenusTree);
+        return routerVos;
+    }
+
+    /**
+     * 根据用户查询按钮权限
+     * @param sysUserId
+     */
+    @Override
+    public List<String> getUserButton(String sysUserId) {
+        List<SysMenu> sysMenuList = null;
+        // 判断是否是管理员(id==1)
+        if("1".equals(sysUserId)){
+            LambdaQueryWrapper<SysMenu> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(SysMenu::getStatus,1);
+            sysMenuList = baseMapper.selectList(queryWrapper);
+        }else{// 不是管理员,普通用户
+            sysMenuList = baseMapper.findMenuListUserId(sysUserId);
+        }
+        // sysMenuList进行遍历
+        List<String> permissionList = new ArrayList<>();
+        sysMenuList.forEach(item->{
+            // type = 2 才是按钮
+            if(item.getType() == 2){
+                // 如果等于2,则获取数据库Perms字段,这个是按钮路径
+                permissionList.add(item.getPerms());
+            }
+        });
+        return permissionList;
     }
 }

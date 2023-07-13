@@ -3,6 +3,7 @@ package com.hang.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.hang.common.result.Result;
+import com.hang.common.utils.PasswordUtils;
 import com.hang.model.system.SysUser;
 import com.hang.model.vo.SysUserQueryVo;
 import com.hang.service.SysUserService;
@@ -42,6 +43,9 @@ public class SysUserController {
     @ApiOperation("用户添加")
     @PostMapping("/save")
     public Result save(@RequestBody SysUser sysUser){
+        // 把输入的密码进行md5加密然后加盐
+        String encrypt = PasswordUtils.encrypt(sysUser.getPassword());
+        sysUser.setPassword(encrypt);
         boolean save = sysUserService.save(sysUser);
 //        if(save){
 //            return Result.ok();
